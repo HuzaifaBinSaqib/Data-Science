@@ -1,0 +1,33 @@
+import pandas as pd
+
+from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.preprocessing import LabelEncoder
+
+df = pd.read_csv("symbolsdict.csv")
+df
+
+encoder_symbol = LabelEncoder()
+encoder_meaning = LabelEncoder()
+
+df['symbol_encoded'] = encoder_symbol.fit_transform(df['symbols'])
+df['meaning_encoded'] = encoder_meaning.fit_transform(df['meaning'])
+
+x = df['symbol_encoded'].values.reshape(-1,1)
+y = df['meaning_encoded']
+
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size = 0.2, random_state = 42)
+
+model = KNeighborsClassifier(n_neighbors=1)
+model.fit(x_train, y_train)
+
+symbol_to_predict = ["<" , "." , "}"]
+predicted_meanings = []
+
+for symbols in symbol_to_predict:
+    symbol_encoded = encoder_symbol.transform([symbols])[0]
+    encrypted = model.predict([[symbol_encoded]])
+    decrypted = encoder_meaning.inverse_transform(encrypted)
+    predicted_meanings.append(decrypted[0])
+sentence = ' '.join(predicted_meanings)
+print(sentence)
